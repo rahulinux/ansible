@@ -1,6 +1,8 @@
 ---
 is_ubuntu: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Ubuntu' 
 is_centos: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux' 
+
+# OS hardening related variables
 sshd_config: '/etc/ssh/sshd_config'
 banner_content: |
    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -16,3 +18,5 @@ banner_content: |
    +                                                                           +
    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+# MongoDB Variables
+mongo_version: '2.6.4'

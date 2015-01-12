@@ -1,0 +1,80 @@
+---
+#  - name: SSHD# Updating {{item.search}} in configuration 
+#    lineinfile:
+#       "backup=yes
+#       state=present
+#       dest={{ sshd_config }} 
+#       regexp=^'{{ item.search }}'
+#       line='{{ item.replace }}'"
+#    with_items:
+#       - { search: 'LoginGraceTime', replace: 'LoginGraceTime 2m' }
+#       - { search: 'PermitEmptyPasswords', replace: 'PermitEmptyPasswords no' }
+#       - { search: 'PermitRootLogin', replace: 'PermitRootLogin no' }
+#       - { search: 'MaxAuthTries', replace: 'MaxAuthTries 3' }
+#       - { search: 'SyslogFacility', replace: 'SyslogFacility AUTHPRIV' }
+#       - { search: 'LogLevel', replace: 'LogLevel INFO' }
+#       - { search: 'StrictModes', replace: 'StrictModes yes' }
+#       - { search: 'ClientAliveInterval', replace: 'ClientAliveInterval 600' }
+#       - { search: 'ClientAliveCountMax', replace: 'ClientAliveCountMax 3' }
+#       - { search: 'Protocol', replace: 'Protocol 2' }
+#       - { search: 'Ciphers', replace: 'Ciphers aes256-ctr' }
+#       - { search: 'MACs hmac-sha', replace: 'MACs hmac-sha1,hmac-sha2-256,hmac-sha2-512' }
+#       - { search: 'PrintLastLog', replace: 'PrintLastLog yes' }
+#       - { search: 'PasswordAuthentication', replace: 'PasswordAuthentication yes' }
+#       - { search: 'X11Forwarding', replace: 'X11Forwarding no' }
+#       - { search: 'Banner', replace: 'Banner /etc/issue.ssh' }
+#
+#  - name: SSHD# Adding ssh banner 
+#    local_action: 
+#       "copy dest=/etc/issue.ssh 
+#       content='{{ banner_content }}'"
+#
+#  - name: SSHD# Restarting ssh service
+#    service:
+#       name=ssh
+#       state=restarted
+#
+#  - set_fact: bash_file='/etc/bash.bashrc'
+#    when: "{{is_ubuntu}}"
+#  
+#  - set_fact: bash_file='/etc/bashrc'
+#    when: "{{is_centos}}"
+#
+#  - name: Add Global ENV
+#    lineinfile: 
+#       "state=present 
+#        dest='{{ bash_file }}'
+#        regexp='^{{ item.search }}' 
+#        line='{{ item.replace }}'"
+#    with_items:
+#       - { search: 'LC_ALL=', replace: 'export LC_ALL=en_US.utf8' }
+#       - { search: 'LANG=', replace: 'export LANG=en_US.utf8' }
+#       - { search: 'LANGUAGE=', replace: 'export LANGUAGE=en_US.utf8' }
+#       - { search: 'LANGUAGE=', replace: 'export LANGUAGE=en_US.utf8' }
+#   
+#  - set_fact: pam_conf='/etc/pam.d/common-password' 
+#    when: "{{is_ubuntu}}"
+#
+#  - set_fact: pam_conf='/etc/pam.d/system-auth' 
+#    when: "{{is_centos}}" 
+#
+#  - name: Enforcing strong password 
+#    lineinfile:
+#       "state=present
+#        dest='{{ pam_conf }}'
+#        regexp='^pam_permit.so'
+#        line='password    required     pam_permit.so try_first_pass minlen=20 difok=20 dcredit=-1 ucredit=-1 lcredit=-1 retry=3'"
+#
+#  - name: Set Password aging for new users
+#    lineinfile:
+#       "state=present
+#        dest=/etc/login.defs
+#        regexp='^{{ item.search }}'
+#        line='{{ item.replace }}'"
+#    with_items:
+#      - { search: 'PASS_MAX_DAYS', replace: 'PASS_MAX_DAYS   60' }
+#      - { search: 'PASS_MIN_DAYS', replace: 'PASS_MIN_DAYS 0' }
+#      - { search: 'PASS_WARN_AGE', replace: 'PASS_WARN_AGE 10' }
+#
+#      
+#

@@ -13,4 +13,4 @@
     sudo: true
     when: "{{is_ubuntu}}" 
   
-  - apt: upgrade=yes
+  #- apt: upgrade=yes
