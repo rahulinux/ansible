@@ -11,7 +11,6 @@
     - build-essential
     - openssl
     sudo: true
-    when: 
-       ansible_distribution == 'Debian' or 
-       ansible_distribution == 'Ubuntu'
-  #- apt: upgrade=yes
+    when: "{{is_ubuntu}}" 
+  
+  - apt: upgrade=yes
