@@ -1,0 +1,8 @@
+---
+  - hosts: all
+    vars_files:
+       - vars.yml
+    sudo: true
+    tasks:
+       - include: os_hardening.yml
+       - include: base_packages.yml 

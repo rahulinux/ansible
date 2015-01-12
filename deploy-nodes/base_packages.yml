@@ -1,0 +1,16 @@
+---
+  - name: Install list of packages
+    action: 
+       apt 
+       update_cache=yes 
+       cache_valid_time=600
+       pkg={{item}} 
+       state=installed
+    with_items:
+    - unzip
+    - build-essential
+    - openssl
+    sudo: true
+    when: 
+       ansible_distribution == 'Debian' or 
+       ansible_distribution == 'Ubuntu'

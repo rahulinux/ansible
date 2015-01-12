@@ -1,0 +1,2 @@
+[servers]
+192.168.122.51 ansible_ssh_user=devops ansible_sudo_pass=x ansible_ssh_pass=x 

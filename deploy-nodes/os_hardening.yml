@@ -1,0 +1,20 @@
+---
+  - name: SSHD# Disable Root login
+    lineinfile: 
+        backup=yes 
+        state=present 
+        dest={{ sshd_config }} 
+        regexp='^PermitRootLogin' 
+        line='PermitRootLogin no'
+
+  - name: SSHD# Updating MaxAuthTries to 3
+    lineinfile: 
+        backup=yes 
+        state=present 
+        dest={{ sshd_config }} 
+        regexp='^MaxAuthTries' line='MaxAuthTries 3'
+
+  - name: SSHD# Restarting ssh service
+    service:
+      name=ssh
+      state=restarted
