@@ -3,7 +3,7 @@
     action: 
        apt 
        update_cache=yes 
-       cache_valid_time=600
+       cache_valid_time=84600
        pkg={{item}} 
        state=installed
     with_items:
@@ -14,3 +14,4 @@
     when: 
        ansible_distribution == 'Debian' or 
        ansible_distribution == 'Ubuntu'
+  #- apt: upgrade=yes
