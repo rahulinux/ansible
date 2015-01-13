@@ -9,7 +9,7 @@ git clone https://github.com/rahulinux/ansible
 
 ```
 cd ansible/deploy-nodes/
-vim vars.yml
+vim group_vars/all 
 ```
 
 3. Define your remote hosts in "`ansible-hosts`"

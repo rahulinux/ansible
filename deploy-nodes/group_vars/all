@@ -1,0 +1,9 @@
+---
+is_ubuntu: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian' 
+is_centos: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+os: "'$ansible_distribution'"
+# OS hardening related variables
+sshd_config: '/etc/ssh/sshd_config'
+
+# MongoDB Variables
+mongo_version: '2.6.4'

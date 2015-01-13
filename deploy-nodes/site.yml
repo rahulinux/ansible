@@ -1,0 +1,10 @@
+---
+  - hosts: all
+    sudo: true
+    roles:
+       - common
+
+  - hosts: db_servers
+    sudo: true
+    roles:
+       - dbserver 

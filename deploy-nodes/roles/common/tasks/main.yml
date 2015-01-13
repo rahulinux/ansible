@@ -1,0 +1,3 @@
+---
+  - include: os_hardening.yml
+  - include: base_packages.yml 

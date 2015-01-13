@@ -2,4 +2,4 @@
 192.168.122.51 ansible_ssh_user=devops ansible_sudo_pass=password ansible_ssh_pass=password 
 
 [db_servers]
-192.168.122.1 ansible_ssh_user=rahul ansible_sudo_pass=password ansible_ssh_pass=password
+192.168.122.1 ansible_ssh_user=rahul ansible_sudo_pass=p\@ssw1rd ansible_ssh_pass=p\@ssw1rd
