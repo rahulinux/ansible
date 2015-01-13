@@ -13,7 +13,7 @@ Ansible is a radically simple IT automation platform that makes your application
 
 ##Goal 
 
-We will install ansible on your local machine and setup following things in remote machine 
+We will install ansible on your local machine and setup following things in remote machine
 
   - 1. OS Hardening 
   - 2. Install base packages 
@@ -29,11 +29,10 @@ sudo apt-get install -y ansible
 
 ##Creating Playbook 
 
-We will separate our task using 3 different playbook 
+We will create one common role, which will do following things
 
   - 1. os_hardening.yml  :  All things related to OS hardening 
   - 2. base_package.yml :  Install or compile required packages
-  - 3. main.yml              :  above both task include in main 
 
 Also there will be one single file to manage global variables, like in future if we need to change version of any application or links etc. 
 
@@ -43,20 +42,30 @@ Now create one dir and cd into it then create yml files
 mkdir deploy-nodes && cd deploy-nodes
 ```
 
-##Create our yml file
+##Create playbook structure
 
 ```
-touch vars.yml main.yml base_packages.yml ansible_hosts os_hardening.yml 
+mkdir -p roles/common/tasks
+touch site.yml
+touch roles/common/tasks/main.yml
+touch roles/common/tasks/os_hardening.yml
+touch roles/common/tasks/base_packages.yml
+touch group_vars/all
 ```
 
 So our final structure as below :
 
 ```
-|-- vars.yml
-|-- main.yml
 |-- ansible_hosts
-|-- base_packages.yml
-`-- os_hardening.yml
+|-- group_vars
+|  `-- all
+|-- roles
+| `-- common
+|   `-- tasks
+|    |-- base_packages.yml
+|    |-- main.yml
+|    `-- os_hardening.yml
+`-- site.yml
 ```
 
 Now let's configure the os_hardening.yml
@@ -65,7 +74,7 @@ There are many things you can do to secure your OS but for learning ansible, we 
 
 Let's first defined ssh related variables in vars.yml file
 
-Edit "vars.yml" and configure as below :
+Edit "group_vars/all" and configure as below :
 
 ```
 ---
@@ -73,7 +82,7 @@ sshd_config: '/etc/ssh/sshd_config'
 ```
 
 
-Configure the os_hardening.yml
+Configure the "roles/common/tasks/os_hardening.yml"
 
 ```
 ---
@@ -105,7 +114,7 @@ Configure the os_hardening.yml
    - 2. Again search and replace but if search not found then it will add "MaxAuthTries 3"
    - 3. Finally it will restart ssh to affect the changes. 
 
-Configure base_package.yml
+Configure "roles/common/tasks/base_package.yml"
 
 ```
 ---
@@ -130,17 +139,22 @@ Configure base_package.yml
 
 It will first do apt-get update if it is not run last 10 min ( cache_valid_time=600 ), then it will install mention packages. 
 
-Configure main.yml file
+Configure "roles/common/tasks/main.yml" file
+
+```
+---
+ - include: os_hardening.yml
+ - include: base_packages.yml
+```
+
+Configure "site.yml" file
 
 ```
 ---
   - hosts: all
-    vars_files:
-       - vars.yml
     sudo: true
-    tasks:
-       - include: os_hardening.yml
-       - include: base_packages.yml
+    roles:
+       - common
 ```
 
 Add your hosts to ansible_hosts file 
