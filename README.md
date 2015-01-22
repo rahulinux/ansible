@@ -67,6 +67,7 @@ So our final structure as below :
 |    `-- os_hardening.yml
 `-- site.yml
 ```
+Note: this is basic structure, if you want to see advance refer [this best practices from ansible docs](http://docs.ansible.com/playbooks_best_practices.html).
 
 Now let's configure the os_hardening.yml
 
