@@ -1,0 +1,57 @@
+---
+    - hosts: webservers
+      serial: 1
+      vars:
+          git_url: 'git@localhost:/opt/git/project.git'
+          version: 'v2.0.0'
+          lb_conf: '/etc/nginx/sites-available/xyz.com'
+
+      pre_tasks:
+
+          - name: Clean tmp
+            local_action: shell ls -1ad $PWD chdir=/tmp/project
+            register: tmp
+            ignore_errors: true
+
+          - local_action: file path={{ item }} state=absent 
+            with_items: tmp.stdout_lines
+
+      tasks:
+          - name: 1# Downloading Code 
+            local_action: shell git clone {{ git_url }} chdir=/tmp/
+          
+          - name: Realoading Load Balancer
+            local_action: shell service nginx reload
+            
+          - name: Checkout branch
+            local_action: shell git checkout -b {{ version }} chdir=/tmp/project/
+
+          - local_action: shell git pull origin  {{ version }} chdir=/tmp/project/
+
+          - name: 2# Stop Alerts
+            debug: msg='Stop alerts for ${inventory_hostname}'
+
+          - name: 3# Remove node from Loadbalancer
+            local_action: lineinfile dest={{ lb_conf }} backrefs=yes state=present regexp="^server ${inventory_hostname}" line='server {{ inventory_hostname }} down;'
+          
+          - name: 4# Stoping Application
+            shell: pkill apache2
+
+          - name: 5# Deploying Code
+            copy: src=/tmp/project/ dest=/var/www/html/
+
+          - name: 6# Starting Application
+            shell: . /etc/apache2/envvars && /usr/sbin/apache2 & 
+
+          - name: Make sure app working or not
+            shell: curl http://localhost | grep 'Hello'
+            register: http_check
+
+          - action: fail
+            when: http_check|failed 
+
+          - name: 7# Adding into Load Balancer
+            local_action: lineinfile dest={{ lb_conf }} backrefs=yes state=present regexp="^server ${inventory_hostname}" line='server {{ inventory_hostname }};'
+
+          - name: Realoading Load Balancer
+            local_action: shell service nginx reload
