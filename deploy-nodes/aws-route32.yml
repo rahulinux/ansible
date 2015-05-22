@@ -1,0 +1,46 @@
+     - name: adding tag
+       ec2_tag: resource={{ item.instances[0].id }} region={{ region }} state=present
+       args:
+          tags:
+              Name: "{{ Server | lower }}_{{ Env | lower }}_{{ item.item }}"
+       with_items: ec2.results
+
+     - name: adding DNS A record
+       route53:
+            command: create
+            private_zone: true
+            zone: "{{ domain }}"
+            record: "{{ Server | lower }}_{{ Env | lower }}_{{  item.item }}.{{ domain }}"
+            type: A
+            ttl: 60
+            value: "{{ item.instances[0].private_ip}}"
+            overwrite: yes
+       with_items: ec2.results
+
+     - name: adding DNS PTR record
+       route53:
+            command: create
+            private_zone: true
+            zone: "{{ rev_domain }}"
+            record: "{% for i in item.instances[0].private_ip.split('.')| reverse %}{{ i }}.{% endfor %}in-addr.arpa."
+            type: PTR
+            ttl: 60
+            value: "{{ Server | lower }}_{{ Env | lower }}_{{  item.item }}.{{ domain }}"
+            overwrite: yes
+       with_items: ec2.results
+
+     - name: Create and attach volume
+      # Create new volume using SSD storage
+       ec2_vol:
+          region: "{{ region }}"
+          instance: "{{ item.instances[0].id }}"
+          volume_size: "{{ ebs_size }}"
+          volume_type: gp2
+          device_name: /dev/xvdf
+       with_items: ec2.results
+       when: "{{ ebs }}"
+       ignore_errors: true
+
+     - name: Add new instances to host group
+       add_host: name="{{ Server | lower }}_{{ Env | lower }}_{{  item.item }}.{{ domain }}" groupname=tag_Name_{{ Server  }} Server={{ Server }}
+       with_items: ec2.results
