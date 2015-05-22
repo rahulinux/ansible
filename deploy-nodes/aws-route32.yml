@@ -44,3 +44,26 @@
      - name: Add new instances to host group
        add_host: name="{{ Server | lower }}_{{ Env | lower }}_{{  item.item }}.{{ domain }}" groupname=tag_Name_{{ Server  }} Server={{ Server }}
        with_items: ec2.results
+       
+            - name: waiting for dns hostname
+       local_action: shell host "{{ Server | lower }}_{{ Env | lower }}_{{  item.item }}.{{ domain }}"
+       register: dns_status
+       until: dns_status.stdout.find("{{ item.instances[0].private_ip}}") != -1
+       retries: 12
+       delay: 10
+       with_items: ec2.results
+
+     - local_action:
+          lineinfile
+          line="{{ Server }}{{':'}} {{ item.instances[0].private_ip }} {{ item.instances[0].id}}"
+          dest="./vars"
+          create=yes
+       with_items: ec2.results
+
+     - set_fact: ebs_vol="{{ ebs_size }}"
+       when: "{{ ebs }}"
+
+     - name: check ssh connection
+       wait_for: host={{ item.instances[0].private_dns_name }} port=22 delay=10 timeout=160 state=started
+       with_items: ec2.results
+
