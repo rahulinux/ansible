@@ -1,0 +1,18 @@
+---
+  - hosts: all
+    gather_facts: false
+    vars:
+      # Email id's seperated by comma
+      email_ids: 'rahul.p2@linuxian.com'
+    tasks:
+       - name: make sure postfix is added in startup
+         service: enabled=yes name=postfix
+
+       - name: make sure postfix is running
+         service: state=restarted name=postfix
+
+       - name: configure rc.local for startup email
+         lineinfile: dest=/etc/rc.local state=present regexp='^mail -s "Server Start Alert"' line='mail -s "Server Start Alert | $(date )" {{ email_ids}} <<< "Server {{ project}} has been started"'
+
+       - name: configure rc.local_shutdown for shutdown email
+         lineinfile: dest=/etc/rc.d/rc.local_shutdown state=present regexp='^mail -s "Server Stop Alert"' line='mail -s "Server Stop Alert | $(date )" {{ email_ids}} <<< "Server {{ project}} has been shutdown"'
