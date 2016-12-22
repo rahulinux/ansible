@@ -1,0 +1,81 @@
+---
+
+- set_fact: backup_dir="{{ app_home }}/{{ ansible_date_time.date }}-backup"
+  tags:
+    - deploy
+
+- name: Creating backup dir for old apps
+  file: path={{ backup_dir }} state=directory
+  register: status
+  tags:
+     - deploy
+
+- name: creating link to lastSuccessBuild
+  file: state=link src={{ backup_dir }} dest={{ app_home }}/lastSuccessBuild
+  when: status|changed
+  tags:
+     - deploy
+
+
+- name: get list of application files
+  shell: find {{ app_home }}/ -maxdepth 1 ! -path . ! -path *backup* ! -path *lastSuccessBuild*
+  register: app_files
+  when: status|changed
+  tags:
+     - deploy
+
+- name: Taking backup of existing files
+  shell: test -f {{ app_home }}/{{ ansible_date_time.date }}/$( basename {{ item }} ) || mv {{ item }} {{ backup_dir }}/
+  ignore_errors: True
+  when: status|changed
+  with_items:
+       - "{{ app_files.stdout_lines }}"
+  tags:
+     - deploy
+
+- name: Checking latest version number
+  local_action: shell cd {{ build_dir }};  find .  -type d -iname 'v*' | sort  | tail -1
+  register: version
+  tags:
+     - deploy
+
+- name: Deploying applications jars
+  synchronize:  src={{ build_dir }}/{{ version.stdout }}/{{ role }}/
+                dest={{ app_home }} partial=yes
+  register: deploystatus
+  tags:
+     - deploy
+
+- name: get list of application files
+  shell: find {{ app_home }}/ -maxdepth 1 -iname "*.tar" ! -path . ! -path *backup* ! -path *lastSuccessBuild*
+  register: tar_files
+  tags:
+     - deploy
+
+- name: Extracting tar files
+  shell: tar -xf "{{ item }}"
+  args:
+    chdir: "{{ app_home }}"
+  with_items:
+      - "{{ tar_files.stdout_lines }}"
+  tags:
+     - deploy
+
+- name: Removing 2 days old deployed files
+  shell: cd {{ app_home }}; find . -maxdepth 1 -type d -mtime +2 -exec rm -rfv {} \;
+  tags:
+     - deploy
+
+- name: Roll backup of old jars
+  shell: cd {{ app_home }}/lastSuccessBuild && find . -maxdepth 1 ! -path . ! -path *backup* ! -path *tmp*
+  register: rollback
+  tags:
+     - rollback
+
+- name: Roll backup of old jars
+  shell: mv  {{ app_home }}/lastSuccessBuild/{{ item }} {{ app_home }}/
+  with_items:
+     - "{{ rollback.stdout_lines }}"
+  when: "{{ rollback.stdout != '' }}"
+  tags:
+     - rollback
